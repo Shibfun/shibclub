@@ -86,6 +86,24 @@
         }
         .token-select div { display: flex; align-items: center; }
         .token-select img { width: 24px; height: 24px; margin-right: 10px; }
+        .switch-button {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .switch-button button {
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .switch-button button:hover { background: #e68a00; }
         .status {
             margin-top: 10px;
             font-size: 0.9em;
@@ -142,34 +160,37 @@
             <h3>Create Token</h3>
             <input type="text" id="tokenName" placeholder="Token Name">
             <input type="text" id="tokenSymbol" placeholder="Token Symbol">
-            <input type="number" id="tokenAmount" placeholder="Initial Supply (in BONE)" step="0.01">
             <button id="deployButton" onclick="deployToken()">Deploy Token</button>
         </div>
         <div class="section" id="tradeSection">
             <h3>Trade Token</h3>
-            <div class="swap-box">
+            <div class="swap-box" id="fromBox">
                 <div class="balance-row">
-                    <span>From (BONE)</span>
-                    <span id="boneBalance">Balance: 0</span>
+                    <span id="fromLabel">From (BONE)</span>
+                    <span id="fromBalance">Balance: 0</span>
                 </div>
-                <div class="token-select">
+                <div class="token-select" id="fromToken">
                     <div><img src="images/bone.png" alt="BONE"><span>BONE</span></div>
                 </div>
-                <input type="number" id="buyAmount" placeholder="Amount" step="0.01" oninput="updateBuyOutput()">
+                <input type="number" id="tradeAmount" placeholder="Amount" step="0.01" oninput="updateTradeOutput()">
             </div>
-            <div class="swap-box">
+            <div class="switch-button">
+                <button onclick="switchTokens()">↓↑</button>
+            </div>
+            <div class="swap-box" id="toBox">
                 <div class="balance-row">
-                    <span>To (Token)</span>
-                    <span id="tokenBalance">Balance: 0</span>
+                    <span id="toLabel">To (Token)</span>
+                    <span id="toBalance">Balance: 0</span>
                 </div>
-                <div class="token-select" id="tokenSelect" onclick="showTokenModal()">
+                <div class="token-select" id="toToken" onclick="showTokenModal()">
                     <div><div class="placeholder">?</div><span>Select Token</span></div>
                     <span>▼</span>
                 </div>
-                <div id="buyOutput" class="status">Estimated output: 0</div>
+                <input type="text" id="customTokenAddress" placeholder="Or enter token address">
+                <button onclick="loadCustomToken()">Load Token</button>
+                <div id="tradeOutput" class="status">Estimated output: 0</div>
             </div>
-            <button id="buyButton" onclick="buyToken()">Buy Token</button>
-            <button id="sellButton" onclick="sellToken()">Sell Token</button>
+            <button id="tradeButton" onclick="executeTrade()">Buy Token</button>
         </div>
     </div>
     <div class="modal" id="tokenModal">
@@ -184,7 +205,9 @@
             {"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+            {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}
         ];
         const routerAbi = [
             {"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address","name":"tokenFrom","type":"address"},{"internalType":"address","name":"tokenTo","type":"address"},{"internalType":"bool","name":"stable","type":"bool"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokensSimple","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
@@ -202,11 +225,13 @@
             rpcUrls: ['https://rpc.shibrpc.com'],
             blockExplorerUrls: ['https://shibariumscan.io']
         };
-        const boneAddress = "0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd";
+        const boneToken = { address: "0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd", symbol: "BONE", logo: "images/bone.png", isNative: true };
         const routerAddress = "0x96b16aBD53Bfd765F4CD118590C1d0be8B57DE24";
         let web3, account, factory, router;
         let currentFactoryAddress = "0xbd9083bcC795506BBcb25A7bD85dBd5829B9De35";
-        let selectedToken = null;
+        let fromToken = boneToken;
+        let toToken = null;
+        let isBuying = true;
         let deployedTokens = [];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -254,11 +279,23 @@
         async function updateBalances() {
             if (!web3 || !account) return;
             const boneBalance = await web3.eth.getBalance(account);
-            document.getElementById('boneBalance').innerText = `Balance: ${web3.utils.fromWei(boneBalance, 'ether')}`;
-            if (selectedToken) {
-                const tokenContract = new web3.eth.Contract(tokenAbi, selectedToken.address);
+            const fromBalanceElement = document.getElementById('fromBalance');
+            const toBalanceElement = document.getElementById('toBalance');
+            if (fromToken.isNative) {
+                fromBalanceElement.innerText = `Balance: ${web3.utils.fromWei(boneBalance, 'ether')}`;
+            } else {
+                const tokenContract = new web3.eth.Contract(tokenAbi, fromToken.address);
                 const tokenBalance = await tokenContract.methods.balanceOf(account).call();
-                document.getElementById('tokenBalance').innerText = `Balance: ${web3.utils.fromWei(tokenBalance, 'ether')}`;
+                fromBalanceElement.innerText = `Balance: ${web3.utils.fromWei(tokenBalance, 'ether')}`;
+            }
+            if (toToken) {
+                if (toToken.isNative) {
+                    toBalanceElement.innerText = `Balance: ${web3.utils.fromWei(boneBalance, 'ether')}`;
+                } else {
+                    const tokenContract = new web3.eth.Contract(tokenAbi, toToken.address);
+                    const tokenBalance = await tokenContract.methods.balanceOf(account).call();
+                    toBalanceElement.innerText = `Balance: ${web3.utils.fromWei(tokenBalance, 'ether')}`;
+                }
             }
         }
 
@@ -273,9 +310,8 @@
         async function deployToken() {
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
-            const amount = document.getElementById('tokenAmount').value;
             const status = document.getElementById('networkStatus');
-            if (!web3 || !account || !name || !symbol || !amount) {
+            if (!web3 || !account || !name || !symbol) {
                 status.innerText = "Please connect wallet and fill all fields.";
                 return;
             }
@@ -291,7 +327,7 @@
                 });
                 const deployed = await deployTx.send({ from: account, gas: 2000000 });
                 const tokenAddress = deployed.options.address;
-                await deployed.methods.mint(account, web3.utils.toWei(amount, 'ether')).send({ from: account });
+                await deployed.methods.mint(account, web3.utils.toWei("1000000", 'ether')).send({ from: account });
                 deployedTokens.push({ address: tokenAddress, symbol });
                 status.innerText = `Token ${symbol} deployed at ${tokenAddress}`;
                 deployButton.disabled = false;
@@ -316,24 +352,62 @@
             modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
         }
 
-        function selectToken(token) {
-            selectedToken = token;
-            document.getElementById('tokenSelect').innerHTML = `<div><img src="images/token.png" alt="${token.symbol}"><span>${token.symbol}</span></div><span>▼</span>`;
-            document.getElementById('tokenModal').style.display = 'none';
-            updateBalances();
-            updateBuyOutput();
+        async function loadCustomToken() {
+            const address = document.getElementById('customTokenAddress').value;
+            const status = document.getElementById('networkStatus');
+            if (!web3 || !account || !address) {
+                status.innerText = "Please connect wallet and enter a valid address.";
+                return;
+            }
+            try {
+                const tokenContract = new web3.eth.Contract(tokenAbi, address);
+                const symbol = await tokenContract.methods.symbol().call();
+                const name = await tokenContract.methods.name().call();
+                const token = { address, symbol, name };
+                if (!deployedTokens.some(t => t.address === address)) {
+                    deployedTokens.push(token);
+                }
+                selectToken(token);
+                status.innerText = `Loaded token: ${symbol}`;
+            } catch (error) {
+                status.innerText = "Failed to load token: " + error.message;
+            }
         }
 
-        async function updateBuyOutput() {
-            const amount = document.getElementById('buyAmount').value;
-            const output = document.getElementById('buyOutput');
-            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
+        function selectToken(token) {
+            toToken = token;
+            document.getElementById('toToken').innerHTML = `<div><img src="images/token.png" alt="${token.symbol}"><span>${token.symbol}</span></div><span>▼</span>`;
+            document.getElementById('tokenModal').style.display = 'none';
+            updateBalances();
+            updateTradeOutput();
+        }
+
+        function switchTokens() {
+            [fromToken, toToken] = [toToken, fromToken];
+            isBuying = !isBuying;
+            document.getElementById('fromLabel').innerText = isBuying ? "From (BONE)" : `From (${toToken.symbol})`;
+            document.getElementById('toLabel').innerText = isBuying ? `To (${toToken.symbol})` : "To (BONE)";
+            document.getElementById('fromToken').innerHTML = fromToken.isNative ?
+                `<div><img src="images/bone.png" alt="BONE"><span>BONE</span></div>` :
+                `<div><img src="images/token.png" alt="${fromToken.symbol}"><span>${fromToken.symbol}</span></div>`;
+            document.getElementById('toToken').innerHTML = toToken.isNative ?
+                `<div><img src="images/bone.png" alt="BONE"><span>BONE</span></div><span>▼</span>` :
+                `<div><img src="images/token.png" alt="${toToken.symbol}"><span>${toToken.symbol}</span></div><span>▼</span>`;
+            document.getElementById('tradeButton').innerText = isBuying ? "Buy Token" : "Sell Token";
+            updateBalances();
+            updateTradeOutput();
+        }
+
+        async function updateTradeOutput() {
+            const amount = document.getElementById('tradeAmount').value;
+            const output = document.getElementById('tradeOutput');
+            if (!web3 || !account || !toToken || !amount || amount <= 0) {
                 output.innerText = "Estimated output: 0";
                 return;
             }
             const amountInWei = web3.utils.toWei(amount, 'ether');
             try {
-                const routes = [{ from: boneAddress, to: selectedToken.address, stable: false }];
+                const routes = [{ from: fromToken.address, to: toToken.address, stable: false }];
                 const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
                 const outputAmount = web3.utils.fromWei(amounts[1], 'ether');
                 output.innerText = `Estimated output: ${outputAmount}`;
@@ -342,66 +416,46 @@
             }
         }
 
-        async function buyToken() {
-            const amount = document.getElementById('buyAmount').value;
+        async function executeTrade() {
+            const amount = document.getElementById('tradeAmount').value;
             const status = document.getElementById('networkStatus');
-            const buyButton = document.getElementById('buyButton');
-            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
+            const tradeButton = document.getElementById('tradeButton');
+            if (!web3 || !account || !toToken || !amount || amount <= 0) {
                 status.innerText = "Please connect wallet, select token, and enter amount.";
                 return;
             }
             const amountInWei = web3.utils.toWei(amount, 'ether');
-            buyButton.disabled = true;
-            status.innerText = "Buying...";
+            tradeButton.disabled = true;
+            status.innerText = isBuying ? "Buying..." : "Selling...";
             try {
-                const routes = [{ from: boneAddress, to: selectedToken.address, stable: false }];
+                const routes = [{ from: fromToken.address, to: toToken.address, stable: false }];
                 const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
                 const amountOutMin = web3.utils.toBN(amounts[1]).mul(web3.utils.toBN(995)).div(web3.utils.toBN(1000));
                 const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-                await router.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-                    amountOutMin.toString(),
-                    routes,
-                    account,
-                    deadline
-                ).send({ from: account, value: amountInWei });
-                status.innerText = "Purchase successful!";
+                if (isBuying) {
+                    await router.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+                        amountOutMin.toString(),
+                        routes,
+                        account,
+                        deadline
+                    ).send({ from: account, value: amountInWei });
+                } else {
+                    const tokenContract = new web3.eth.Contract(tokenAbi, fromToken.address);
+                    await tokenContract.methods.approve(routerAddress, amountInWei).send({ from: account });
+                    await router.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                        amountInWei,
+                        amountOutMin.toString(),
+                        routes,
+                        account,
+                        deadline
+                    ).send({ from: account });
+                }
+                status.innerText = isBuying ? "Purchase successful!" : "Sale successful!";
                 updateBalances();
             } catch (error) {
-                status.innerText = "Buy failed: " + error.message;
-                buyButton.disabled = false;
-            }
-        }
-
-        async function sellToken() {
-            const amount = document.getElementById('buyAmount').value;
-            const status = document.getElementById('networkStatus');
-            const sellButton = document.getElementById('sellButton');
-            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
-                status.innerText = "Please connect wallet, select token, and enter amount.";
-                return;
-            }
-            const amountInWei = web3.utils.toWei(amount, 'ether');
-            sellButton.disabled = true;
-            status.innerText = "Selling...";
-            try {
-                const tokenContract = new web3.eth.Contract(tokenAbi, selectedToken.address);
-                await tokenContract.methods.approve(routerAddress, amountInWei).send({ from: account });
-                const routes = [{ from: selectedToken.address, to: boneAddress, stable: false }];
-                const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
-                const amountOutMin = web3.utils.toBN(amounts[1]).mul(web3.utils.toBN(995)).div(web3.utils.toBN(1000));
-                const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-                await router.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
-                    amountInWei,
-                    amountOutMin.toString(),
-                    routes,
-                    account,
-                    deadline
-                ).send({ from: account });
-                status.innerText = "Sale successful!";
-                updateBalances();
-            } catch (error) {
-                status.innerText = "Sell failed: " + error.message;
-                sellButton.disabled = false;
+                status.innerText = (isBuying ? "Buy" : "Sell") + " failed: " + error.message;
+            } finally {
+                tradeButton.disabled = false;
             }
         }
     </script>
