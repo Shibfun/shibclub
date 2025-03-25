@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shibarium Token Factory</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -89,26 +90,6 @@
             color: var(--primary-color);
             text-align: center;
         }
-        .my-tokens-list {
-            background: var(--input-bg);
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-        .token-entry {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-        }
-        .token-entry span { flex: 1; }
-        .copy-button {
-            background: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .copy-button:hover { background: #e68a00; }
     </style>
 </head>
 <body>
@@ -131,10 +112,6 @@
             <input type="text" id="tokenName" placeholder="Token Name">
             <input type="text" id="tokenSymbol" placeholder="Token Symbol">
             <button id="deployButton" onclick="deployToken()">Deploy Token</button>
-        </div>
-        <div class="section" id="myTokensSection">
-            <h3>My Tokens</h3>
-            <div id="myTokensList" class="my-tokens-list"></div>
         </div>
         <div class="section" id="tradeSection">
             <h3>Trade Token</h3>
@@ -193,11 +170,9 @@
         let web3, account, factory, router;
         let currentFactoryAddress = "0xbd9083bcC795506BBcb25A7bD85dBd5829B9De35";
         let selectedToken = null;
-        let deployedTokens = JSON.parse(localStorage.getItem('deployedTokens')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
-            updateMyTokensList();
         });
 
         async function connectWallet() {
@@ -216,7 +191,6 @@
                 connectButton.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
                 status.innerText = "Connected to Shibarium";
                 updateBalances();
-                updateMyTokensList();
             } catch (error) {
                 status.innerText = "Failed: " + error.message;
                 connectButton.textContent = "Connect Wallet";
@@ -280,43 +254,12 @@
                 const deployed = await deployTx.send({ from: account, gas: Math.floor(gasEstimate * 1.2) });
                 const tokenAddress = deployed.options.address;
                 await deployed.methods.mint(account, web3.utils.toWei("1000000", 'ether')).send({ from: account });
-                deployedTokens.push({ address: tokenAddress, symbol, owner: account });
-                localStorage.setItem('deployedTokens', JSON.stringify(deployedTokens));
                 status.innerText = `Token ${symbol} deployed at ${tokenAddress}`;
                 deployButton.disabled = false;
-                updateMyTokensList();
             } catch (error) {
                 status.innerText = "Deployment failed: " + (error.message || error);
                 deployButton.disabled = false;
             }
-        }
-
-        function updateMyTokensList() {
-            const myTokensList = document.getElementById('myTokensList');
-            myTokensList.innerHTML = '';
-            const myTokens = deployedTokens.filter(token => token.owner.toLowerCase() === account.toLowerCase());
-            if (myTokens.length === 0) {
-                myTokensList.innerHTML = '<p>No tokens deployed by you.</p>';
-                return;
-            }
-            myTokens.forEach(token => {
-                const div = document.createElement('div');
-                div.className = 'token-entry';
-                div.innerHTML = `
-                    <span>${token.symbol}</span>
-                    <span>${token.address.slice(0, 6)}...${token.address.slice(-4)}</span>
-                    <button class="copy-button" onclick="copyToClipboard('${token.address}')">Copy</button>
-                `;
-                myTokensList.appendChild(div);
-            });
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                document.getElementById('networkStatus').innerText = "Address copied to clipboard!";
-            }).catch(err => {
-                document.getElementById('networkStatus').innerText = "Failed to copy address: " + err;
-            });
         }
 
         async function loadCustomToken() {
@@ -336,17 +279,11 @@
                 const tokenContract = new web3.eth.Contract(tokenAbi, address);
                 const symbol = await tokenContract.methods.symbol().call();
                 const name = await tokenContract.methods.name().call();
-                const owner = await tokenContract.methods.owner().call();
-                selectedToken = { address, symbol, name, owner };
-                if (!deployedTokens.some(t => t.address === address)) {
-                    deployedTokens.push(selectedToken);
-                    localStorage.setItem('deployedTokens', JSON.stringify(deployedTokens));
-                }
+                selectedToken = { address, symbol, name };
                 tokenInfo.innerText = `Loaded: ${name} (${symbol})`;
                 toLabel.innerText = `To (${symbol})`;
                 updateBalances();
                 updateTradeOutput();
-                updateMyTokensList();
             } catch (error) {
                 tokenInfo.innerText = "Failed to load token";
                 toLabel.innerText = "To (Token)";
