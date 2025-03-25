@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Woofswap - Swap</title>
+    <title>Shibarium Token Factory</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,11 +15,7 @@
             --text-color: #ffffff;
             --border-radius: 15px;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Poppins', sans-serif;
             background: var(--gradient-bg);
@@ -37,7 +33,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             border-radius: var(--border-radius);
             padding: 20px;
-            position: relative;
         }
         .header {
             background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
@@ -48,25 +43,29 @@
             font-weight: 600;
             margin-bottom: 20px;
         }
-        .connect-section button {
-            padding: 12px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: bold;
+        .section { margin-bottom: 20px; }
+        .section select, .section input, .section button {
             width: 100%;
-            transition: background 0.2s;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
         }
-        .connect-section button:hover { background: #e68a00; }
+        .section button {
+            background: var(--primary-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .section button:hover { background: #e68a00; }
+        .section button:disabled { background: #4a4f7a; cursor: not-allowed; }
         .swap-box {
             background: var(--input-bg);
             padding: 15px;
             border-radius: var(--border-radius);
             margin-bottom: 15px;
-            position: relative;
         }
         .balance-row {
             display: flex;
@@ -85,85 +84,14 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
-        .token-select div {
-            display: flex;
-            align-items: center;
-        }
-        .token-select img {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-        }
-        .token-select .placeholder {
-            width: 24px;
-            height: 24px;
-            background: #4a4f7a;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            background: var(--input-bg);
-            border: none;
-            border-radius: 10px;
-            color: var(--text-color);
-            font-size: 1em;
-            text-align: right;
-        }
-        .percentage-buttons {
-            display: flex;
-            gap: 5px;
+        .token-select div { display: flex; align-items: center; }
+        .token-select img { width: 24px; height: 24px; margin-right: 10px; }
+        .status {
             margin-top: 10px;
-        }
-        .percentage-buttons button {
-            padding: 5px 10px;
-            background: #4a4f7a;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            color: var(--text-color);
-            flex: 1;
-        }
-        .percentage-buttons button:hover { background: #5a5f8a; }
-        .switch-button {
+            font-size: 0.9em;
+            color: var(--primary-color);
             text-align: center;
-            margin: 15px 0;
         }
-        .switch-button button {
-            padding: 10px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .swap-button {
-            padding: 15px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        .swap-button:disabled {
-            background: #4a4f7a;
-            cursor: not-allowed;
-        }
-        .swap-button:hover:not(:disabled), .switch-button button:hover { background: #e68a00; }
         .modal {
             display: none;
             position: fixed;
@@ -192,164 +120,80 @@
             border-radius: 10px;
         }
         .token-item:hover { background: var(--input-bg); }
-        .token-item img {
-            width: 32px;
-            height: 32px;
-            margin-right: 10px;
-        }
-        .status {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--primary-color);
-            text-align: center;
-        }
-        .slippage-info, .swap-note {
-            font-size: 0.9em;
-            color: #ff9100;
-            margin-top: 5px;
-            text-align: left;
-        }
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #fff;
-            border-top: 2px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 5px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .dog-section {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .dog-section img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
-        }
-        .dog-message {
-            font-size: 0.9em;
-            color: var(--secondary-color);
-            font-style: italic;
-        }
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .container { padding: 15px; }
-            .header { font-size: 1.1em; }
-            .modal-content { margin: 10% auto; }
-            .percentage-buttons button { padding: 5px; }
-            .dog-section img { width: 50px; height: 50px; }
-            .dog-message { font-size: 0.8em; }
-        }
+        .token-item img { width: 32px; height: 32px; margin-right: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">Woofswap</div>
-        <div class="connect-section">
+        <div class="header">Shibarium Token Factory</div>
+        <div class="section">
+            <select id="factorySelect" onchange="updateFactory()">
+                <option value="0xbd9083bcC795506BBcb25A7bD85dBd5829B9De35">Shibaswap 69000 BONE</option>
+                <option value="0xF45411c6eCFE4dE8a0b37158404C7A7FCb0f6682">Shibaswap 6900 BONE</option>
+                <option value="0x5BC93D3b88Ebb35efC9A5572CC5fBB8a26Ec9A52">Shibaswap 690 BONE</option>
+                <option value="0xee58D293E783a589681aaAdDC099F973f706e50E">Woofswap 69000 BONE</option>
+                <option value="0xd54F3D9E2f8e8124fbd23e6671508c417aBEE989">Woofswap 6900 BONE</option>
+                <option value="0x8Fd1945E9F486C5Aa85f0CBEA170519CF9D33C25">Woofswap 690 BONE</option>
+            </select>
             <button id="connectWalletButton">Connect Wallet</button>
             <div id="networkStatus" class="status">Click to connect...</div>
         </div>
-        <div class="swap-box">
-            <div class="balance-row">
-                <span>From</span>
-                <span id="fromBalance">Balance: 0</span>
-            </div>
-            <div class="token-select" id="fromToken">
-                <div>
-                    <img src="images/bone.png" alt="BONE">
-                    <span id="fromTokenSymbol">BONE</span>
+        <div class="section" id="deploySection">
+            <h3>Create Token</h3>
+            <input type="text" id="tokenName" placeholder="Token Name">
+            <input type="text" id="tokenSymbol" placeholder="Token Symbol">
+            <input type="number" id="tokenAmount" placeholder="Initial Supply (in BONE)" step="0.01">
+            <button id="deployButton" onclick="deployToken()">Deploy Token</button>
+        </div>
+        <div class="section" id="tradeSection">
+            <h3>Trade Token</h3>
+            <div class="swap-box">
+                <div class="balance-row">
+                    <span>From (BONE)</span>
+                    <span id="boneBalance">Balance: 0</span>
                 </div>
-                <span></span>
-            </div>
-            <input type="number" id="fromAmount" placeholder="0.0" step="0.01" oninput="calculateOutput()">
-            <div class="percentage-buttons">
-                <button onclick="setPercentage(25)">25%</button>
-                <button onclick="setPercentage(50)">50%</button>
-                <button onclick="setPercentage(75)">75%</button>
-                <button onclick="setPercentage(100)">MAX</button>
-            </div>
-        </div>
-        <div class="switch-button">
-            <button onclick="switchTokens()">↓↑</button>
-        </div>
-        <div class="swap-box">
-            <div class="balance-row">
-                <span>To</span>
-                <span id="toBalance">Balance: 0</span>
-            </div>
-            <div class="token-select" id="toToken">
-                <div>
-                    <div class="placeholder">?</div>
-                    <span>Select a token</span>
+                <div class="token-select">
+                    <div><img src="images/bone.png" alt="BONE"><span>BONE</span></div>
                 </div>
-                <span>▼</span>
+                <input type="number" id="buyAmount" placeholder="Amount" step="0.01" oninput="updateBuyOutput()">
             </div>
-            <div class="slippage-info">Default Slippage: 0.5%</div>
-            <div class="swap-note" id="swapNote">Amount automatically calculated by Woofswap</div>
-        </div>
-        <button class="swap-button" id="swapButton" onclick="swapTokens()">Swap</button>
-        <div class="dog-section">
-            <img src="images/shiba.gif" alt="Shiba Dog">
-            <div class="dog-message" id="dogMessage">"Woof! Connect your wallet to start swapping, pup!"</div>
+            <div class="swap-box">
+                <div class="balance-row">
+                    <span>To (Token)</span>
+                    <span id="tokenBalance">Balance: 0</span>
+                </div>
+                <div class="token-select" id="tokenSelect" onclick="showTokenModal()">
+                    <div><div class="placeholder">?</div><span>Select Token</span></div>
+                    <span>▼</span>
+                </div>
+                <div id="buyOutput" class="status">Estimated output: 0</div>
+            </div>
+            <button id="buyButton" onclick="buyToken()">Buy Token</button>
+            <button id="sellButton" onclick="sellToken()">Sell Token</button>
         </div>
     </div>
     <div class="modal" id="tokenModal">
         <div class="modal-content">
-            <h3>Select a token</h3>
+            <h3>Select Token</h3>
             <div id="tokenList"></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
-        const tokens = [
-            { address: "0xeCe898EdCc0AF91430603175F945D8de75291c70", symbol: "DAMN", logo: "images/damn.png" },
-            { address: "0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0", symbol: "FEED", logo: "images/feed.png" },
-            { address: "0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7", symbol: "WOW", logo: "images/wow.png" },
-            { address: "0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad", symbol: "SHIPA", logo: "images/shipa.png" },
-            { address: "0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839", symbol: "CHIKA", logo: "images/chika.png" },
-            { address: "0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834", symbol: "WOOF", logo: "images/woof.png" },
-            { address: "0x0b4FD6288b6d32171CC515bfFC9340026F56A358", symbol: "PIKA", logo: "images/pika.png" },
-            { address: "0x0cCD687CC6F8461170336D8e8cf46A39313DEab9", symbol: "LUISA", logo: "images/luisa.png" },
-            { address: "0xB9Ae1d4e474CC154F48e5C2f0559Eb3A78Ad1F09", symbol: "SHIBS", logo: "images/shibs.png" },
-            { address: "0x0C7f96C5f141Df976f8680044082c48C351f8906", symbol: "WILD", logo: "images/wild.png" },
-            { address: "0x91fbB2503AC69702061f1AC6885759Fc853e6EaE", symbol: "KNINE", logo: "images/knine.png" },
-            { address: "0x9f56cba9c3d4cd9f3d7b899ea0ff8292fe8264a8", symbol: "DUDU", logo: "images/dudu.png" },
-            { address: "0x8ed7d143Ef452316Ab1123d28Ab302dC3b80d3ce", symbol: "ETH", logo: "images/eth.png" },
-            { address: "0x495eea66B0f8b636D441dC6a98d8F5C3D455C4c0", symbol: "SHIB", logo: "images/shib.png" },
-            { address: "0x65218A41Fb92637254B4f8c97448d3dF343A3064", symbol: "LEASH", logo: "images/leash.png" },
-            { address: "0x60Af8e3BCa91E68B3d36141E0f3403C316004Af5", symbol: "MWRX", logo: "images/mwrx.png" },
-            { address: "0x506d8d2d9c715Eb34F514cc3EF48C7aBD19e2bc7", symbol: "TREAT", logo: "images/treat.png" }
+        const tokenAbi = [
+            {"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
         ];
-        const boneToken = { address: "0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd", symbol: "BONE", logo: "images/bone.png", isNative: true };
-        const routerAddress = "0x96b16aBD53Bfd765F4CD118590C1d0be8B57DE24";
-        const factoryAddress = "0xB9fbdFA27B7ba8BB2d4bB4aB399e4c55F0F7F83a";
-        const wethAddress = "0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd";
         const routerAbi = [
             {"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address","name":"tokenFrom","type":"address"},{"internalType":"address","name":"tokenTo","type":"address"},{"internalType":"bool","name":"stable","type":"bool"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokensSimple","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"components":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bool","name":"stable","type":"bool"}],"internalType":"struct Router.route[]","name":"routes","type":"tuple[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokensSupportingFeeOnTransferTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"components":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bool","name":"stable","type":"bool"}],"internalType":"struct Router.route[]","name":"routes","type":"tuple[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactETHForTokensSupportingFeeOnTransferTokens","outputs":[],"stateMutability":"payable","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"components":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bool","name":"stable","type":"bool"}],"internalType":"struct Router.route[]","name":"routes","type":"tuple[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForETHSupportingFeeOnTransferTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"components":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bool","name":"stable","type":"bool"}],"internalType":"struct Router.route[]","name":"routes","type":"tuple[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}
         ];
         const factoryAbi = [
             {"inputs":[{"internalType":"address","name":"tokenA","type":"address"},{"internalType":"address","name":"tokenB","type":"address"},{"internalType":"bool","name":"stable","type":"bool"}],"name":"getPair","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
-        ];
-        const pairAbi = [
-            {"inputs":[],"name":"getReserves","outputs":[{"internalType":"uint256","name":"reserve0","type":"uint256"},{"internalType":"uint256","name":"reserve1","type":"uint256"},{"internalType":"uint32","name":"blockTimestampLast","type":"uint32"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"token1","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"stable","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}
-        ];
-        const erc20Abi = [
-            {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},
-            {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"type":"function"},
-            {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
         ];
         const shibarium = {
             chainId: 109,
@@ -358,76 +202,36 @@
             rpcUrls: ['https://rpc.shibrpc.com'],
             blockExplorerUrls: ['https://shibariumscan.io']
         };
-        let web3, account, router, factory;
-        let fromToken = boneToken;
-        let toToken = null;
-        let fromBalance = '0';
-        let isFromBone = true;
-        let isApproving = false;
-        const defaultSlippage = 0.005;
-        const maxPriceImpact = 0.5;
-
-        const dogMessages = {
-            connectStart: ["Woof woof! Sniffing out your wallet, hold tight, human!","Arf! Digging into Shibarium, let’s fetch that wallet!","Bow wow! Connecting to your stash, stay pawsitive!","Woof! I smell a wallet, let’s link it up quick!"],
-            connectSuccess: ["Arf arf! You’re in, pup! Time to chase some BONEs!","Woof! Wallet’s hooked, ready to roll in Shibarium!","Yip yip! Connected, hooman! Let’s swap some treats!","Bow wow! Welcome aboard, let’s sniff out some swaps!"],
-            connectFail: ["Grrr... Wallet slipped away, try again, hooman!","Woof? No wallet scent detected, give it another go!","Arf arf! Something barked up, retry connecting, pup!","Ruff! Wallet’s hiding, let’s dig it out again!"],
-            tokenModal: ["Woof! Pick a token, let’s sniff out a juicy deal!","Arf! What treat shall we fetch today, hooman?","Bow wow! Tokens galore, choose your fave, pup!","Yip! Time to pick a bone to swap, let’s go!"],
-            selectToken: (symbol) => [`Arf arf! ${symbol}, huh? Smells like a tasty choice!`,`Woof! ${symbol} caught your eye? Good nose, pup!`,`Bow wow! ${symbol} it is! Let’s wag into action!`,`Yip yip! ${symbol} sounds pawsome, ready to swap?`],
-            switchTokens: ["Woof woof! Flipping tokens like a Shib pro, huh?","Arf! Swapping sides, let’s keep the tail wagging!","Bow wow! Token switcheroo, you’re a clever pup!","Ruff ruff! Mixing it up, let’s see what we fetch!"],
-            setPercentage: (percent) => [`Woof! ${percent}% in? You’re a bold Shib, hooman!`,`Arf arf! Going ${percent}%? Let’s dig into that swap!`,`Bow wow! ${percent}% of the stash? Pawsitively daring!`,`Yip! ${percent}%? You’re chasing big bones today!`],
-            calcStart: ["Woof! Sniffing out the best price, hang tight!","Arf! Digging up some swap numbers, stay put, pup!","Bow wow! Crunching bones, I’ll fetch the output soon!","Ruff! Calculating your treat, give me a sec, hooman!"],
-            calcSuccess: (amount, symbol) => [`Arf! Found ya ${amount} ${symbol}! Ready to swap, pup?`,`Woof woof! Snagged ${amount} ${symbol}, let’s roll!`,`Yip yip! Dug up ${amount} ${symbol}, happy tail wags!`,`Bow wow! ${amount} ${symbol} sniffed out, swap time!`],
-            calcFail: ["Grrr... No path for these bones, try a new pair, pup!","Woof? Swap trail’s cold, pick another token, hooman!","Arf arf! Couldn’t fetch the output, let’s retry!","Ruff! Swap math barked up, give it another go!"],
-            swapStart: ["Woof woof! Swapping time, let’s fetch those tokens!","Arf! Launching the swap, hold onto your leash, pup!","Bow wow! Trading bones, here we go, Shib style!","Yip! Swapping in Shibarium, let’s make it pawsome!"],
-            swapSuccess: ["Arf arf! Swap done, you’re a Woofswap champ, hooman!","Woof! Tokens fetched, tail-wagging success, pup!","Bow wow! Swapped like a pro, time to celebrate!","Yip yip! Swap complete, you’re the top dog now!"],
-            swapFail: ["Grrr... Swap didn’t work, let’s try again, pup!","Woof? Swap got lost, retry it, clever hooman!","Arf! Token chase failed, another go, Shib friend?","Ruff ruff! Swap slipped, let’s dig it up again!"],
-            swapNoToken: ["Woof? Missing a token, pup! Pick one first!","Arf arf! No treats to swap, choose a pair, hooman!","Bow wow! Where’s the token? Let’s sniff one out!","Yip! Can’t swap air, pick a token, Shib pal!"],
-            swapNoAmount: ["Arf! No amount? How am I supposed to swap air?!","Woof woof! Gimme a number, pup, or we’re stuck!","Bow wow! Empty swap? Fill it up, hooman!","Ruff! Amount’s missing, let’s fetch some digits!"],
-            highPriceImpact: ["Woof woof! That swap has a huge price impact, pup! Try a smaller amount!","Arf! Too many bones at once—price impact’s too high, hooman!","Bow wow! Swap’s too big for the pool, let’s scale it down!","Ruff! Price impact’s barking mad—reduce the amount, Shib friend!"],
-            insufficientLiquidity: ["Grrr... Not enough bones in the pool for this swap, pup!","Woof? Pool’s too shallow—try a smaller swap, hooman!","Arf arf! Liquidity’s low, can’t fetch that many bones!","Ruff! Pool’s running dry—let’s try a smaller trade!"],
-            approving: ["Woof! Approving your tokens, hold on, pup!","Arf! Sniffing out approval, almost there, hooman!","Bow wow! Authorizing the swap, stay pawsitive!","Ruff! Getting ready to trade, approving now!"],
-            userDenied: ["Woof woof! You scared me off, hooman! Approve next time, pup!","Arf! No swap today? You’re a tricky one, let’s try again!","Bow wow! Rejected my trade? Give me a bone next time!","Ruff ruff! You denied me, hooman! Let’s wag back later!"]
-        };
-
-        function getRandomMessage(type, param1, param2) {
-            const messages = dogMessages[type];
-            if (typeof messages === 'function') {
-                const options = messages(param1, param2);
-                return options[Math.floor(Math.random() * options.length)];
-            }
-            return messages[Math.floor(Math.random() * messages.length)];
-        }
+        const boneAddress = "0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd";
+        const routerAddress = "0x96b16aBD53Bfd765F4CD118590C1d0be8B57DE24";
+        let web3, account, factory, router;
+        let currentFactoryAddress = "0xbd9083bcC795506BBcb25A7bD85dBd5829B9De35";
+        let selectedToken = null;
+        let deployedTokens = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
-            document.getElementById('toToken').addEventListener('click', () => showTokenModal('to'));
-            setupWalletListeners();
         });
 
         async function connectWallet() {
             const status = document.getElementById('networkStatus');
             const connectButton = document.getElementById('connectWalletButton');
-            const dogMessage = document.getElementById('dogMessage');
             try {
-                if (!window.ethereum) throw new Error("No wallet detected. Please install MetaMask or another wallet.");
+                if (!window.ethereum) throw new Error("No wallet detected. Please install MetaMask.");
                 connectButton.disabled = true;
                 status.innerText = "Connecting...";
-                dogMessage.innerText = getRandomMessage('connectStart');
                 web3 = new Web3(window.ethereum);
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                if (!accounts.length) throw new Error("No accounts found. Please unlock your wallet.");
                 account = accounts[0];
                 await switchToShibarium();
                 router = new web3.eth.Contract(routerAbi, routerAddress);
-                factory = new web3.eth.Contract(factoryAbi, factoryAddress);
-                updateUIAfterConnect();
-                await updateBalances();
+                factory = new web3.eth.Contract(factoryAbi, currentFactoryAddress);
+                connectButton.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                status.innerText = "Connected to Shibarium";
+                updateBalances();
             } catch (error) {
                 status.innerText = "Failed: " + error.message;
-                dogMessage.innerText = getRandomMessage('connectFail');
-                console.error(error);
-                resetUI();
-            } finally {
+                connectButton.textContent = "Connect Wallet";
                 connectButton.disabled = false;
             }
         }
@@ -436,16 +240,10 @@
             const chainId = await web3.eth.getChainId();
             if (Number(chainId) !== 109) {
                 try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: "0x6d" }]
-                    });
+                    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: "0x6d" }] });
                 } catch (switchError) {
                     if (switchError.code === 4902) {
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [shibarium]
-                        });
+                        await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [shibarium] });
                     } else {
                         throw switchError;
                     }
@@ -453,343 +251,157 @@
             }
         }
 
-        function updateUIAfterConnect() {
-            const connectButton = document.getElementById('connectWalletButton');
-            const status = document.getElementById('networkStatus');
-            const dogMessage = document.getElementById('dogMessage');
-            connectButton.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
-            status.innerText = "Connected to Shibarium";
-            dogMessage.innerText = getRandomMessage('connectSuccess');
-        }
-
-        function resetUI() {
-            const connectButton = document.getElementById('connectWalletButton');
-            const status = document.getElementById('networkStatus');
-            connectButton.textContent = "Connect Wallet";
-            status.innerText = "Click to connect...";
-        }
-
-        function setupWalletListeners() {
-            if (!window.ethereum) return;
-            window.ethereum.on('accountsChanged', async (newAccounts) => {
-                if (newAccounts.length) {
-                    account = newAccounts[0];
-                    if (web3) {
-                        await switchToShibarium();
-                        router = new web3.eth.Contract(routerAbi, routerAddress);
-                        factory = new web3.eth.Contract(factoryAbi, factoryAddress);
-                        updateUIAfterConnect();
-                        await updateBalances();
-                    } else {
-                        await connectWallet();
-                    }
-                } else {
-                    web3 = null;
-                    account = null;
-                    router = null;
-                    factory = null;
-                    resetUI();
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
-                }
-            });
-            window.ethereum.on('chainChanged', async (chainId) => {
-                if (parseInt(chainId, 16) !== 109) {
-                    web3 = null;
-                    account = null;
-                    router = null;
-                    factory = null;
-                    resetUI();
-                    document.getElementById('networkStatus').innerText = "Wrong network. Reconnect to Shibarium.";
-                    document.getElementById('dogMessage').innerText = "Woof! Wrong chain, pup! Switch to Shibarium!";
-                } else if (account) {
-                    await connectWallet();
-                }
-            });
-        }
-
         async function updateBalances() {
             if (!web3 || !account) return;
-            if (fromToken.isNative) {
-                fromBalance = await web3.eth.getBalance(account);
-                document.getElementById('fromBalance').innerText = `Balance: ${web3.utils.fromWei(fromBalance, 'ether')}`;
-            } else {
-                const tokenContract = new web3.eth.Contract(erc20Abi, fromToken.address);
-                fromBalance = await tokenContract.methods.balanceOf(account).call();
-                document.getElementById('fromBalance').innerText = `Balance: ${web3.utils.fromWei(fromBalance, 'ether')}`;
-            }
-            if (toToken) {
-                let toBalance;
-                if (toToken.isNative) {
-                    toBalance = await web3.eth.getBalance(account);
-                } else {
-                    const toTokenContract = new web3.eth.Contract(erc20Abi, toToken.address);
-                    toBalance = await toTokenContract.methods.balanceOf(account).call();
-                }
-                document.getElementById('toBalance').innerText = `Balance: ${web3.utils.fromWei(toBalance, 'ether')}`;
+            const boneBalance = await web3.eth.getBalance(account);
+            document.getElementById('boneBalance').innerText = `Balance: ${web3.utils.fromWei(boneBalance, 'ether')}`;
+            if (selectedToken) {
+                const tokenContract = new web3.eth.Contract(tokenAbi, selectedToken.address);
+                const tokenBalance = await tokenContract.methods.balanceOf(account).call();
+                document.getElementById('tokenBalance').innerText = `Balance: ${web3.utils.fromWei(tokenBalance, 'ether')}`;
             }
         }
 
-        function showTokenModal(type) {
+        function updateFactory() {
+            currentFactoryAddress = document.getElementById('factorySelect').value;
+            if (web3 && account) {
+                factory = new web3.eth.Contract(factoryAbi, currentFactoryAddress);
+                updateBalances();
+            }
+        }
+
+        async function deployToken() {
+            const name = document.getElementById('tokenName').value;
+            const symbol = document.getElementById('tokenSymbol').value;
+            const amount = document.getElementById('tokenAmount').value;
+            const status = document.getElementById('networkStatus');
+            if (!web3 || !account || !name || !symbol || !amount) {
+                status.innerText = "Please connect wallet and fill all fields.";
+                return;
+            }
+            const deployButton = document.getElementById('deployButton');
+            deployButton.disabled = true;
+            status.innerText = "Deploying...";
+            try {
+                const tokenBytecode = "0x608060405234801561001057600080fd5b506109b8806100206000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c80637d1be73a1161005b5780637d1be73a14610107578063c4d66de81461011b578063d21220a714610143578063dd62ed3e1461016757600080fd5b806306fdde0314610082578063095ea7b3146100a057806318160ddd146100c3575b600080fd5b61008a61019f565b60405161009791906106de565b60405180910390f35b6100b36100ae366004610748565b610231565b6040519015158152602001610097565b6100e57f000000000000000000000000000000000000000000000000000000000000000081565b604051908152602001610097565b6100b3610115366004610771565b61024e565b61012e6101293660046107a3565b6102cb565b6040516001600160a01b039091168152602001610097565b6101556101513660046107c5565b6102e0565b60405161009791906107f8565b6100e5610175366004610812565b6001600160a01b03918216600090815260026020908152604080832093909416825291909152205490565b6060600080546101ae90610845565b80601f01602080910402602001604051908101604052809291908181526020018280546101da90610845565b80156102275780601f106101fc57610100808354040283529160200191610227565b820191906000526020600020905b81548152906001019060200180831161020a57829003601f168201915b5050505050905090565b600061024461023c6102f3565b84846102f7565b50600192915050565b600061026c6001600160a01b0383163330846103fb565b60405163d21220a760e01b81526001600160a01b038581166004830152841660248201526000907f00000000000000000000000000000000000000000000000000000000000000009091169063d21220a790604401602060405180830381865afa1580156102c7573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610244919061087f565b60006102d9336102e0565b905090565b6060600180546101ae90610845565b60006102d933565b6001600160a01b0383166103595760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b60648201526084015b60405180910390fd5b6001600160a01b0382166103b55760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b6064820152608401610350565b6001600160a01b0383811660008181526002602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b604051636eb1769f60e11b81523060048201526001600160a01b0383811660248301526000907f00000000000000000000000000000000000000000000000000000000000000009091169063dd62ed3e90604401602060405180830381865afa158015610463573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610487919061087f565b9050818110156104e15760405162461bcd60e51b815260206004820152601d60248201527f45524332303a20696e73756666696369656e7420616c6c6f77616e63650000006044820152606401610350565b6104eb848461057b565b60405163a9059cbb60e01b81526001600160a01b0386811660048301526024820184905285169063a9059cbb906044016020604051808303816000875af1158015610537573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061055b9190610898565b506105698482610057b565b505050505050565b6001600160a01b0382166105d15760405162461bcd60e51b815260206004820152601f60248201527f45524332303a206275726e2066726f6d20746865207a65726f20616464726573736044820152606401610350565b6105db826105ef565b6001600160a01b03821660009081526020819052604090205560405160009133907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9061062e9085906108b5565b60405180910390a35050565b6001600160a01b03821660009081526020819052604090205461063e575050565b6001600160a01b0383166000908152602081905260409020556000546106649082906108c8565b6001600160a01b038316600090815260208190526040902055600054600055565b60005b838110156106a557818101518382015260200161068d565b5050600082015250565b60006020808301818452808551808352604086019150828160005b838110156106d45785810183015186820184015282016106b5565b5060008401525050602083019250505092915050565b6020815260006106f16020830184610686565b949350505050565b80356001600160a01b038116811461071357600080fd5b919050565b6000806040838503121561072b57600080fd5b610734836106fc565b946020939093013593505050565b60006020828403121561075a57600080fd5b610763826106fc565b9392505050565b60008060006060848603121561078657600080fd5b61078f846106fc565b925061079d602085016106fc565b90509250925092565b6000602082840312156107b557600080fd5b8135610763816108df565b600080604083850312156107d857600080fd5b6107e1836106fc565b91506107ef602084016106fc565b90509250929050565b60006020808352835180602085015260005b818110156108265785810183015185820160400152820161080a565b506000604082850101526040601f19601f820116850190508261076392505050565b600181811c9082168061085957607f821691505b60208210810361087957634e487b7160e01b600052602260045260245bfd5b50919050565b60006020828403121561089157600080fd5b5051919050565b6000602082840312156108aa57600080fd5b8151801515811461076357600080fd5b60208101600283106108d557634e487b7160e01b600052602160045260245bfd5b91905290565b6001600160a01b03811681146108f457600080fd5b50565b60006020828403121561090957600080fd5b8151610763816108df565b6000806040838503121561092757600080fd5b823591506107ef602084016106fc565b600181811b9060ff1682161561095357634e487b7160e01b600052601160045260245bfd5b506000198201915050565b60008261097e57634e487b7160e01b600052601260045260245bfd5b500490565b634e487b7160e01b600052600160045260245bfd5b601f8211156109b557600081815260208120601f850160051c810160208610156109ae5750505b600019600383901b1c1916905550565b505050505050565b6106e0806109c76000396000f3fe";
+                const tokenContract = new web3.eth.Contract(tokenAbi);
+                const deployTx = tokenContract.deploy({
+                    data: tokenBytecode,
+                    arguments: [name, symbol]
+                });
+                const deployed = await deployTx.send({ from: account, gas: 2000000 });
+                const tokenAddress = deployed.options.address;
+                await deployed.methods.mint(account, web3.utils.toWei(amount, 'ether')).send({ from: account });
+                deployedTokens.push({ address: tokenAddress, symbol });
+                status.innerText = `Token ${symbol} deployed at ${tokenAddress}`;
+                deployButton.disabled = false;
+            } catch (error) {
+                status.innerText = "Deployment failed: " + error.message;
+                deployButton.disabled = false;
+            }
+        }
+
+        function showTokenModal() {
             const modal = document.getElementById('tokenModal');
             const tokenList = document.getElementById('tokenList');
-            const dogMessage = document.getElementById('dogMessage');
             tokenList.innerHTML = '';
-            tokens.forEach(token => {
+            deployedTokens.forEach(token => {
                 const div = document.createElement('div');
                 div.className = 'token-item';
-                div.innerHTML = `<img src="${token.logo}" alt="${token.symbol}"><span>${token.symbol}</span>`;
-                div.onclick = () => selectToken(token, type);
+                div.innerHTML = `<img src="images/token.png" alt="${token.symbol}"><span>${token.symbol}</span>`;
+                div.onclick = () => selectToken(token);
                 tokenList.appendChild(div);
             });
             modal.style.display = 'block';
-            dogMessage.innerText = getRandomMessage('tokenModal');
             modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
         }
 
-        function selectToken(token, type) {
-            const dogMessage = document.getElementById('dogMessage');
-            if (type === 'to') {
-                toToken = token;
-                document.getElementById('toToken').innerHTML = `<div><img src="${token.logo}" alt="${token.symbol}"><span>${token.symbol}</span></div><span>▼</span>`;
-                if (isFromBone) {
-                    fromToken = boneToken;
-                } else {
-                    fromToken = token;
-                    toToken = boneToken;
-                    document.getElementById('fromToken').innerHTML = `<div><img src="${fromToken.logo}" alt="${fromToken.symbol}"><span id="fromTokenSymbol">${fromToken.symbol}</span></div><span></span>`;
-                }
-            }
+        function selectToken(token) {
+            selectedToken = token;
+            document.getElementById('tokenSelect').innerHTML = `<div><img src="images/token.png" alt="${token.symbol}"><span>${token.symbol}</span></div><span>▼</span>`;
             document.getElementById('tokenModal').style.display = 'none';
-            dogMessage.innerText = getRandomMessage('selectToken', token.symbol);
             updateBalances();
-            calculateOutput();
+            updateBuyOutput();
         }
 
-        function switchTokens() {
-            const dogMessage = document.getElementById('dogMessage');
-            if (!toToken) {
-                document.getElementById('networkStatus').innerText = "Please select a token to swap to.";
-                dogMessage.innerText = getRandomMessage('swapNoToken');
+        async function updateBuyOutput() {
+            const amount = document.getElementById('buyAmount').value;
+            const output = document.getElementById('buyOutput');
+            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
+                output.innerText = "Estimated output: 0";
                 return;
             }
-            isFromBone = !isFromBone;
-            [fromToken, toToken] = [toToken, fromToken];
-            document.getElementById('fromToken').innerHTML = `<div><img src="${fromToken.logo}" alt="${fromToken.symbol}"><span id="fromTokenSymbol">${fromToken.symbol}</span></div><span></span>`;
-            document.getElementById('toToken').innerHTML = `<div><img src="${toToken.logo}" alt="${toToken.symbol}"><span>${toToken.symbol}</span></div><span>▼</span>`;
-            dogMessage.innerText = getRandomMessage('switchTokens');
-            updateBalances();
-            calculateOutput();
-        }
-
-        function setPercentage(percentage) {
-            const dogMessage = document.getElementById('dogMessage');
-            if (!fromBalance || !web3) {
-                document.getElementById('networkStatus').innerText = "Please connect wallet first.";
-                dogMessage.innerText = getRandomMessage('connectFail');
-                return;
-            }
-            let amount;
-            if (percentage === 100) {
-                amount = web3.utils.fromWei(fromBalance, 'ether');
-            } else {
-                amount = web3.utils.fromWei(fromBalance, 'ether') * (percentage / 100);
-            }
-            if (percentage === 100 && fromToken.isNative) {
-                amount = Math.max(0, amount - 0.01);
-            }
-            document.getElementById('fromAmount').value = amount.toString();
-            dogMessage.innerText = getRandomMessage('setPercentage', percentage);
-            calculateOutput();
-        }
-
-        async function calculateOutput() {
-            const amountIn = document.getElementById('fromAmount').value;
-            const swapNote = document.getElementById('swapNote');
-            const dogMessage = document.getElementById('dogMessage');
-            if (!web3 || !account || !toToken || !amountIn || amountIn <= 0) {
-                swapNote.innerHTML = 'Amount automatically calculated by Woofswap';
-                return;
-            }
-            let amountInWei;
+            const amountInWei = web3.utils.toWei(amount, 'ether');
             try {
-                amountInWei = web3.utils.toBN(web3.utils.toWei(amountIn, 'ether'));
+                const routes = [{ from: boneAddress, to: selectedToken.address, stable: false }];
+                const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
+                const outputAmount = web3.utils.fromWei(amounts[1], 'ether');
+                output.innerText = `Estimated output: ${outputAmount}`;
             } catch (error) {
-                swapNote.innerHTML = 'Invalid amount entered.';
-                dogMessage.innerText = getRandomMessage('swapNoAmount');
-                return;
-            }
-            swapNote.innerHTML = `Estimated output: <span class="spinner"></span>`;
-            dogMessage.innerText = getRandomMessage('calcStart');
-            try {
-                let bestOutput = web3.utils.toBN('0');
-                for (const stable of [true, false]) {
-                    const pairAddress = await factory.methods.getPair(fromToken.address, toToken.address, stable).call();
-                    if (pairAddress !== '0x0000000000000000000000000000000000000000') {
-                        const routes = [{ from: fromToken.address, to: toToken.address, stable }];
-                        const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
-                        const output = web3.utils.toBN(amounts[amounts.length - 1]);
-                        if (output.gt(bestOutput)) {
-                            bestOutput = output;
-                        }
-                    }
-                }
-                if (bestOutput.eq(web3.utils.toBN('0'))) {
-                    swapNote.innerHTML = 'No valid trading pair found.';
-                    dogMessage.innerText = getRandomMessage('calcFail');
-                    return;
-                }
-                const outputEther = parseFloat(web3.utils.fromWei(bestOutput, 'ether'));
-                swapNote.innerHTML = `Estimated output: ${outputEther.toFixed(6)} ${toToken.symbol}`;
-                dogMessage.innerText = getRandomMessage('calcSuccess', outputEther.toFixed(2), toToken.symbol);
-            } catch (error) {
-                console.error("Error calculating output:", error);
-                swapNote.innerHTML = 'Error calculating output.';
-                dogMessage.innerText = getRandomMessage('calcFail');
+                output.innerText = "Error calculating output";
             }
         }
 
-        async function approveToken(tokenAddress, amount) {
-            if (tokenAddress === wethAddress && fromToken.isNative) return;
-            const tokenContract = new web3.eth.Contract(erc20Abi, tokenAddress);
-            const allowance = await tokenContract.methods.allowance(account, routerAddress).call();
-            if (web3.utils.toBN(allowance).lt(web3.utils.toBN(amount))) {
-                const swapButton = document.getElementById('swapButton');
-                const dogMessage = document.getElementById('dogMessage');
-                isApproving = true;
-                swapButton.textContent = "Authorizing...";
-                swapButton.disabled = true;
-                dogMessage.innerText = getRandomMessage('approving');
-                await tokenContract.methods.approve(routerAddress, amount).send({ from: account });
-                document.getElementById('networkStatus').innerText = "Token approved";
-                isApproving = false;
-                swapButton.textContent = "Swap";
-                swapButton.disabled = false;
-                dogMessage.innerText = "Woof! Tokens approved, ready to swap!";
-            }
-        }
-
-        async function swapTokens() {
-            const dogMessage = document.getElementById('dogMessage');
+        async function buyToken() {
+            const amount = document.getElementById('buyAmount').value;
             const status = document.getElementById('networkStatus');
-            const swapButton = document.getElementById('swapButton');
-            if (isApproving) return;
-            if (!web3 || !account || !toToken) {
-                status.innerText = "Please connect wallet and select tokens.";
-                dogMessage.innerText = getRandomMessage('swapNoToken');
+            const buyButton = document.getElementById('buyButton');
+            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
+                status.innerText = "Please connect wallet, select token, and enter amount.";
                 return;
             }
-            const amountIn = document.getElementById('fromAmount').value;
-            if (!amountIn || amountIn <= 0) {
-                status.innerText = "Please enter a valid amount.";
-                dogMessage.innerText = getRandomMessage('swapNoAmount');
-                return;
-            }
-            let amountInWei;
+            const amountInWei = web3.utils.toWei(amount, 'ether');
+            buyButton.disabled = true;
+            status.innerText = "Buying...";
             try {
-                amountInWei = web3.utils.toBN(web3.utils.toWei(amountIn, 'ether'));
+                const routes = [{ from: boneAddress, to: selectedToken.address, stable: false }];
+                const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
+                const amountOutMin = web3.utils.toBN(amounts[1]).mul(web3.utils.toBN(995)).div(web3.utils.toBN(1000));
+                const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+                await router.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+                    amountOutMin.toString(),
+                    routes,
+                    account,
+                    deadline
+                ).send({ from: account, value: amountInWei });
+                status.innerText = "Purchase successful!";
+                updateBalances();
             } catch (error) {
-                status.innerText = "Invalid amount entered.";
-                dogMessage.innerText = getRandomMessage('swapNoAmount');
-                console.error("Amount conversion error:", error);
+                status.innerText = "Buy failed: " + error.message;
+                buyButton.disabled = false;
+            }
+        }
+
+        async function sellToken() {
+            const amount = document.getElementById('buyAmount').value;
+            const status = document.getElementById('networkStatus');
+            const sellButton = document.getElementById('sellButton');
+            if (!web3 || !account || !selectedToken || !amount || amount <= 0) {
+                status.innerText = "Please connect wallet, select token, and enter amount.";
                 return;
             }
-            if (!fromToken.isNative) {
-                const tokenContract = new web3.eth.Contract(erc20Abi, fromToken.address);
-                const tokenBalance = await tokenContract.methods.balanceOf(account).call();
-                if (web3.utils.toBN(tokenBalance).lt(amountInWei)) {
-                    status.innerText = "Insufficient token balance.";
-                    dogMessage.innerText = "Woof! Not enough bones to swap, pup!";
-                    return;
-                }
-            }
-            const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-            let bestStable = false;
-            let bestOutput = web3.utils.toBN('0');
-            let routes;
+            const amountInWei = web3.utils.toWei(amount, 'ether');
+            sellButton.disabled = true;
+            status.innerText = "Selling...";
             try {
-                for (const stable of [true, false]) {
-                    const pairAddress = await factory.methods.getPair(fromToken.address, toToken.address, stable).call();
-                    if (pairAddress !== '0x0000000000000000000000000000000000000000') {
-                        const tempRoutes = [{ from: fromToken.address, to: toToken.address, stable }];
-                        const amounts = await router.methods.getAmountsOut(amountInWei, tempRoutes).call();
-                        const output = web3.utils.toBN(amounts[amounts.length - 1]);
-                        if (output.gt(bestOutput)) {
-                            bestOutput = output;
-                            bestStable = stable;
-                            routes = tempRoutes;
-                        }
-                    }
-                }
-                if (bestOutput.eq(web3.utils.toBN('0')) || !routes) {
-                    status.innerText = "No valid trading pair found.";
-                    dogMessage.innerText = getRandomMessage('calcFail');
-                    return;
-                }
-                const pairAddress = await factory.methods.getPair(fromToken.address, toToken.address, bestStable).call();
-                const pairContract = new web3.eth.Contract(pairAbi, pairAddress);
-                const reserves = await pairContract.methods.getReserves().call();
-                const token0 = await pairContract.methods.token0().call();
-                const reserveFrom = token0 === fromToken.address ? reserves.reserve0 : reserves.reserve1;
-                const reserveTo = token0 === fromToken.address ? reserves.reserve1 : reserves.reserve0;
-                const reserveFromBN = web3.utils.toBN(reserveFrom);
-                const reserveToBN = web3.utils.toBN(reserveTo);
-                const priceImpact = amountInWei.mul(web3.utils.toBN(100)).div(reserveFromBN.add(amountInWei));
-                if (priceImpact.gt(web3.utils.toBN(maxPriceImpact * 100))) {
-                    status.innerText = `Price impact too high (${priceImpact.toString()}%).`;
-                    dogMessage.innerText = getRandomMessage('highPriceImpact');
-                    return;
-                }
-                if (bestOutput.gt(reserveToBN)) {
-                    status.innerText = `Insufficient liquidity in pool.`;
-                    dogMessage.innerText = getRandomMessage('insufficientLiquidity');
-                    return;
-                }
-                const slippageFactor = web3.utils.toBN(1000 - defaultSlippage * 1000);
-                const amountOutMin = bestOutput.mul(slippageFactor).div(web3.utils.toBN(1000));
-                swapButton.disabled = true;
-                status.innerText = "Processing swap...";
-                dogMessage.innerText = getRandomMessage('swapStart');
-                if (!fromToken.isNative) {
-                    await approveToken(fromToken.address, amountInWei);
-                }
-                if (fromToken.isNative) {
-                    await router.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-                        amountOutMin.toString(),
-                        routes,
-                        account,
-                        deadline
-                    ).send({ from: account, value: amountInWei });
-                } else {
-                    await router.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
-                        amountInWei.toString(),
-                        amountOutMin.toString(),
-                        routes,
-                        account,
-                        deadline
-                    ).send({ from: account });
-                }
-                status.innerText = "Swap successful!";
-                dogMessage.innerText = getRandomMessage('swapSuccess');
-                document.getElementById('fromAmount').value = '';
-                await updateBalances();
+                const tokenContract = new web3.eth.Contract(tokenAbi, selectedToken.address);
+                await tokenContract.methods.approve(routerAddress, amountInWei).send({ from: account });
+                const routes = [{ from: selectedToken.address, to: boneAddress, stable: false }];
+                const amounts = await router.methods.getAmountsOut(amountInWei, routes).call();
+                const amountOutMin = web3.utils.toBN(amounts[1]).mul(web3.utils.toBN(995)).div(web3.utils.toBN(1000));
+                const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+                await router.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                    amountInWei,
+                    amountOutMin.toString(),
+                    routes,
+                    account,
+                    deadline
+                ).send({ from: account });
+                status.innerText = "Sale successful!";
+                updateBalances();
             } catch (error) {
-                console.error("Swap failed:", error);
-                let errorMessage = error.message || "Unknown error";
-                if (error.message.includes("User denied transaction signature")) {
-                    errorMessage = "User denied transaction signature.";
-                    dogMessage.innerText = getRandomMessage('userDenied');
-                } else if (error.message.includes("INSUFFICIENT_OUTPUT_AMOUNT") || error.message.includes("EXCESSIVE_INPUT_AMOUNT")) {
-                    errorMessage = "Swap failed: Price impact or slippage too high.";
-                    dogMessage.innerText = "Woof! Swap failed—too much price impact or slippage.";
-                } else if (error.message.includes("INSUFFICIENT_LIQUIDITY")) {
-                    errorMessage = "Swap failed: Insufficient liquidity in the pool.";
-                    dogMessage.innerText = getRandomMessage('insufficientLiquidity');
-                } else {
-                    dogMessage.innerText = getRandomMessage('swapFail');
-                }
-                status.innerText = errorMessage;
-            } finally {
-                swapButton.disabled = false;
+                status.innerText = "Sell failed: " + error.message;
+                sellButton.disabled = false;
             }
         }
     </script>
