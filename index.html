@@ -41,7 +41,7 @@
                 <div class="token-display">
                     <img src="images/bone.png" alt="BONE"><span>BONE</span>
                 </div>
-                <input type="number" id="tradeAmount" placeholder="Amount" step="0.000000000000000001">
+                <input type="number" id="boneAmount" placeholder="BONE Amount" step="0.000000000000000001">
             </div>
             <div class="swap-box">
                 <div class="balance-row">
@@ -50,6 +50,7 @@
                 </div>
                 <input type="text" id="customTokenAddress" placeholder="Enter token address" oninput="loadCustomToken()">
                 <div id="tokenInfo" class="status"></div>
+                <input type="number" id="tokenAmount" placeholder="Token Amount" step="0.000000000000000001">
                 <div class="percentage-buttons">
                     <button onclick="setPercentage(25)">25%</button>
                     <button onclick="setPercentage(50)">50%</button>
@@ -83,11 +84,11 @@
 
         async function loadCustomToken(){const t=document.getElementById("customTokenAddress").value,e=document.getElementById("networkStatus"),n=document.getElementById("tokenInfo"),o=document.getElementById("toLabel");if(!web3||!account||!t||42!==t.length)return n.innerText="",o.innerText="To (Token)",selectedToken=null,tokenBalanceWei=0,updateBalances();try{const a=new web3.eth.Contract(tokenAbi,t),i=await a.methods.symbol().call(),l=await a.methods.name().call();selectedToken={address:t,symbol:i,name:l},n.innerText=`Loaded: ${l} (${i})`,o.innerText=`To (${i})`,updateBalances()}catch(t){n.innerText="Failed to load token",o.innerText="To (Token)",selectedToken=null,tokenBalanceWei=0,updateBalances()}}
 
-        function setPercentage(t){if(!selectedToken||!tokenBalanceWei)return;const e=web3.utils.toBN(tokenBalanceWei),n=web3.utils.toBN("1000000000000000000"),o=web3.utils.toBN("1"),a=e.mul(web3.utils.toBN(t)).div(web3.utils.toBN(100));let i=a;100===t&&(i=a.sub(o)),document.getElementById("tradeAmount").value=web3.utils.fromWei(i,"ether")}
+        function setPercentage(t){if(!selectedToken||!tokenBalanceWei)return;const e=web3.utils.toBN(tokenBalanceWei),n=web3.utils.toBN("1000000000000000000"),o=web3.utils.toBN("1"),a=e.mul(web3.utils.toBN(t)).div(web3.utils.toBN(100));let i=a;100===t&&(i=a.sub(o)),document.getElementById("tokenAmount").value=web3.utils.fromWei(i,"ether")}
 
-        async function buyToken(){const t=document.getElementById("tradeAmount").value,e=document.getElementById("networkStatus"),n=document.getElementById("buyButton");if(!web3||!account||!selectedToken||!t||t<=0)return void(e.innerText="Please connect wallet, enter token address, and specify amount.");const o=web3.utils.toWei(t,"ether");n.disabled=!0,e.innerText="Buying...";try{await factory.methods.buyTokens(selectedToken.address).send({from:account,value:o}),e.innerText="Purchase successful!",updateBalances()}catch(t){e.innerText="Buy failed: "+(t.message||t)}finally{n.disabled=!1}}
+        async function buyToken(){const t=document.getElementById("boneAmount").value,e=document.getElementById("networkStatus"),n=document.getElementById("buyButton");if(!web3||!account||!selectedToken||!t||t<=0)return void(e.innerText="Please connect wallet, enter token address, and specify BONE amount.");const o=web3.utils.toWei(t,"ether");n.disabled=!0,e.innerText="Buying...";try{await factory.methods.buyTokens(selectedToken.address).send({from:account,value:o}),e.innerText="Purchase successful!",updateBalances()}catch(t){e.innerText="Buy failed: "+(t.message||t)}finally{n.disabled=!1}}
 
-        async function sellToken(){const t=document.getElementById("tradeAmount").value,e=document.getElementById("networkStatus"),n=document.getElementById("sellButton");if(!web3||!account||!selectedToken||!t||t<=0)return void(e.innerText="Please connect wallet, enter token address, and specify amount.");const o=web3.utils.toWei(t,"ether");if(web3.utils.toBN(o).gt(web3.utils.toBN(tokenBalanceWei)))return void(e.innerText="Insufficient balance.");n.disabled=!0,e.innerText="Approving...";try{const a=new web3.eth.Contract(tokenAbi,selectedToken.address);await a.methods.approve(currentFactoryAddress,o).send({from:account}),e.innerText="Selling...",await factory.methods.sellTokens(selectedToken.address,o).send({from:account}),e.innerText="Sale successful!",updateBalances()}catch(t){e.innerText="Sell failed: "+(t.message||t)}finally{n.disabled=!1}}
+        async function sellToken(){const t=document.getElementById("tokenAmount").value,e=document.getElementById("networkStatus"),n=document.getElementById("sellButton");if(!web3||!account||!selectedToken||!t||t<=0)return void(e.innerText="Please connect wallet, enter token address, and specify token amount.");const o=web3.utils.toWei(t,"ether");if(web3.utils.toBN(o).gt(web3.utils.toBN(tokenBalanceWei)))return void(e.innerText="Insufficient balance.");n.disabled=!0,e.innerText="Approving...";try{const a=new web3.eth.Contract(tokenAbi,selectedToken.address);await a.methods.approve(currentFactoryAddress,o).send({from:account}),e.innerText="Selling...",await factory.methods.sellTokens(selectedToken.address,o).send({from:account}),e.innerText="Sale successful!",updateBalances()}catch(t){e.innerText="Sell failed: "+(t.message||t)}finally{n.disabled=!1}}
     </script>
 </body>
 </html>
