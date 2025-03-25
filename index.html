@@ -193,10 +193,11 @@
         let web3, account, factory, router;
         let currentFactoryAddress = "0xbd9083bcC795506BBcb25A7bD85dBd5829B9De35";
         let selectedToken = null;
-        let deployedTokens = [];
+        let deployedTokens = JSON.parse(localStorage.getItem('deployedTokens')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
+            updateMyTokensList();
         });
 
         async function connectWallet() {
@@ -275,15 +276,17 @@
                     data: tokenBytecode,
                     arguments: [name, symbol]
                 });
-                const deployed = await deployTx.send({ from: account, gas: 2000000 });
+                const gasEstimate = await deployTx.estimateGas({ from: account });
+                const deployed = await deployTx.send({ from: account, gas: Math.floor(gasEstimate * 1.2) });
                 const tokenAddress = deployed.options.address;
                 await deployed.methods.mint(account, web3.utils.toWei("1000000", 'ether')).send({ from: account });
                 deployedTokens.push({ address: tokenAddress, symbol, owner: account });
+                localStorage.setItem('deployedTokens', JSON.stringify(deployedTokens));
                 status.innerText = `Token ${symbol} deployed at ${tokenAddress}`;
                 deployButton.disabled = false;
                 updateMyTokensList();
             } catch (error) {
-                status.innerText = "Deployment failed: " + error.message;
+                status.innerText = "Deployment failed: " + (error.message || error);
                 deployButton.disabled = false;
             }
         }
@@ -320,8 +323,10 @@
             const address = document.getElementById('customTokenAddress').value;
             const status = document.getElementById('networkStatus');
             const tokenInfo = document.getElementById('tokenInfo');
+            const toLabel = document.getElementById('toLabel');
             if (!web3 || !account || !address || address.length !== 42) {
                 tokenInfo.innerText = "";
+                toLabel.innerText = "To (Token)";
                 selectedToken = null;
                 updateBalances();
                 updateTradeOutput();
@@ -335,13 +340,16 @@
                 selectedToken = { address, symbol, name, owner };
                 if (!deployedTokens.some(t => t.address === address)) {
                     deployedTokens.push(selectedToken);
+                    localStorage.setItem('deployedTokens', JSON.stringify(deployedTokens));
                 }
-                tokenInfo.innerText = `Loaded: ${symbol} (${name})`;
+                tokenInfo.innerText = `Loaded: ${name} (${symbol})`;
+                toLabel.innerText = `To (${symbol})`;
                 updateBalances();
                 updateTradeOutput();
                 updateMyTokensList();
             } catch (error) {
                 tokenInfo.innerText = "Failed to load token";
+                toLabel.innerText = "To (Token)";
                 selectedToken = null;
                 updateBalances();
                 updateTradeOutput();
@@ -391,7 +399,7 @@
                 status.innerText = "Purchase successful!";
                 updateBalances();
             } catch (error) {
-                status.innerText = "Buy failed: " + error.message;
+                status.innerText = "Buy failed: " + (error.message || error);
             } finally {
                 buyButton.disabled = false;
             }
@@ -425,7 +433,7 @@
                 status.innerText = "Sale successful!";
                 updateBalances();
             } catch (error) {
-                status.innerText = "Sell failed: " + error.message;
+                status.innerText = "Sell failed: " + (error.message || error);
             } finally {
                 sellButton.disabled = false;
             }
